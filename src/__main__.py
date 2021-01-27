@@ -14,6 +14,7 @@ import cv2
 # custom imports
 from eye import eye_aspect_ratio
 from alarm import sound_alarm
+from yawn import detect_yawn
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -76,6 +77,8 @@ def main():
 		# array
 		shape = predictor(gray, rect)
 		shape = face_utils.shape_to_np(shape)
+
+		detect_yawn(frame, shape, cv2)
 
 		# extract the left and right eye coordinates, then use the
 		# coordinates to compute the eye aspect ratio for both eyes
