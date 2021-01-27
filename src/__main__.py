@@ -15,7 +15,6 @@ import cv2
 from eye import eye_aspect_ratio
 from alarm import sound_alarm
 
-
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--shape-predictor", required=True,
@@ -97,6 +96,8 @@ def main():
 
 		# check to see if the eye aspect ratio is below the blink
 		# threshold, and if so, increment the blink frame counter
+		global COUNTER
+		global ALARM_ON
 		if ear < EYE_AR_THRESH:
 			COUNTER += 1
 
@@ -134,8 +135,6 @@ def main():
  
 	# show the frame
 	cv2.imshow("Frame", frame)
-
-
 
 if __name__ == '__main__':
     # execute only if run as the entry point into the program
