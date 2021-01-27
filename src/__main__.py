@@ -1,7 +1,3 @@
-# USAGE
-# python detect_drowsiness.py --shape-predictor shape_predictor_68_face_landmarks.dat
-# python detect_drowsiness.py --shape-predictor shape_predictor_68_face_landmarks.dat --alarm alarm.wav
-
 # import the necessary packages
 from scipy.spatial import distance as dist
 from imutils.video import VideoStream
@@ -15,36 +11,21 @@ import time
 import dlib
 import cv2
 
-def sound_alarm(path):
-	# play an alarm sound
-	playsound.playsound(path)
+# custom imports
+from eye import eye_aspect_ratio
+from alarm import sound_alarm
 
-def eye_aspect_ratio(eye):
-	# compute the euclidean distances between the two sets of
-	# vertical eye landmarks (x, y)-coordinates
-	A = dist.euclidean(eye[1], eye[5])
-	B = dist.euclidean(eye[2], eye[4])
 
-	# compute the euclidean distance between the horizontal
-	# eye landmark (x, y)-coordinates
-	C = dist.euclidean(eye[0], eye[3])
-
-	# compute the eye aspect ratio
-	ear = (A + B) / (2.0 * C)
-
-	# return the eye aspect ratio
-	return ear
- 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--shape-predictor", required=True,
-	help="path to facial landmark predictor")
+    help="path to facial landmark predictor")
 ap.add_argument("-a", "--alarm", type=str, default="",
-	help="path alarm .WAV file")
+    help="path alarm .WAV file")
 ap.add_argument("-w", "--webcam", type=int, default=0,
-	help="index of webcam on system")
+    help="index of webcam on system")
 args = vars(ap.parse_args())
- 
+
 # define two constants, one for the eye aspect ratio to indicate
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold for to set off the
@@ -73,8 +54,12 @@ print("[INFO] starting video stream thread...")
 vs = VideoStream(src=args["webcam"]).start()
 time.sleep(1.0)
 
-# loop over frames from the video stream
-while True:
+def kill():
+    # do a bit of cleanup
+    cv2.destroyAllWindows()
+    vs.stop()
+
+def main():
 	# grab the frame from the threaded video file stream, resize
 	# it, and convert it to grayscale
 	# channels)
@@ -149,12 +134,15 @@ while True:
  
 	# show the frame
 	cv2.imshow("Frame", frame)
-	key = cv2.waitKey(1) & 0xFF
- 
-	# if the `q` key was pressed, break from the loop
-	if key == ord("q"):
-		break
 
-# do a bit of cleanup
-cv2.destroyAllWindows()
-vs.stop()
+
+
+if __name__ == '__main__':
+    # execute only if run as the entry point into the program
+    while True:
+        main()
+        # if the `q` key was pressed, break from the loop
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            break
+    kill()
