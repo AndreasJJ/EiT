@@ -15,3 +15,16 @@ def eye_aspect_ratio(eye):
 
 	# return the eye aspect ratio
 	return ear
+
+def compute_ear(leftEye, rightEye):
+
+	# compute eye aspect ration of each indicidual eye
+	# using left and right eye coordinates
+	leftEAR = eye_aspect_ratio(leftEye)
+	rightEAR = eye_aspect_ratio(rightEye)
+
+	# average the eye aspect ratio together for both eyes
+	ear = (leftEAR + rightEAR) / 2.0
+
+	# return the average eye aspect ratio
+	return ear	

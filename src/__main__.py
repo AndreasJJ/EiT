@@ -12,7 +12,7 @@ import dlib
 import cv2
 
 # custom imports
-from eye import eye_aspect_ratio
+from eye import compute_ear
 from alarm import sound_alarm
 
 # construct the argument parse and parse the arguments
@@ -30,12 +30,17 @@ args = vars(ap.parse_args())
 # frames the eye must be below the threshold for to set off the
 # alarm
 EYE_AR_THRESH = 0.3
+EYE_AR_CLOSED = 0.2
 EYE_AR_CONSEC_FRAMES = 48
 
 # initialize the frame counter as well as a boolean used to
 # indicate if the alarm is going off
 COUNTER = 0
 ALARM_ON = False
+
+EYES_CLOSED = False
+BLINKING = 0
+BLINK_LENGTH = 0
 
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
@@ -77,15 +82,29 @@ def main():
 		shape = predictor(gray, rect)
 		shape = face_utils.shape_to_np(shape)
 
-		# extract the left and right eye coordinates, then use the
-		# coordinates to compute the eye aspect ratio for both eyes
+		# extract the left and right eye coordinates
 		leftEye = shape[lStart:lEnd]
 		rightEye = shape[rStart:rEnd]
-		leftEAR = eye_aspect_ratio(leftEye)
-		rightEAR = eye_aspect_ratio(rightEye)
 
-		# average the eye aspect ratio together for both eyes
-		ear = (leftEAR + rightEAR) / 2.0
+		# get the average eye aspect ratio
+		ear = compute_ear(leftEye, rightEye)
+
+		# if the eye was closed and is now open
+		# there was a blink,
+		global EYES_CLOSED
+		global BLINKING
+		global BLINK_LENGTH
+		if EYES_CLOSED and ear > EYE_AR_CLOSED:
+			BLINKING += 1
+		elif ear < EYE_AR_CLOSED:
+			BLINK_LENGTH += 1
+
+		# update if eyes are closed
+		EYES_CLOSED = ear < EYE_AR_CLOSED
+
+		print("EYES_CLOSED: {}".format(EYES_CLOSED))
+		print("BLINKING: {}".format(BLINKING))
+
 
 		# compute the convex hull for the left and right eye, then
 		# visualize each of the eyes
