@@ -18,7 +18,7 @@ Command: `python3 src --shape-predictor src/datasets/shape_predictor_68_face_lan
 
 # Information
 The face is divided up into 68 points as seen in the picture below:
-![face](https://github.com/andreasjj/EiT/blob/master/facial_landmarks_68markup.jpg?raw=true)
+![face](https://github.com/andreasjj/EiT/blob/main/facial_landmarks_68markup.jpg?raw=true)
 ## MAR
 The mar is calculated from points 49-60 By getting the length of A, B, and C as seen below:
-![face](https://github.com/andreasjj/EiT/blob/master/MAR.jpg?raw=true)
+![face](https://github.com/andreasjj/EiT/blob/main/MAR.jpg?raw=true)
