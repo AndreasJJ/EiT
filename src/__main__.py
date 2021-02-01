@@ -30,7 +30,8 @@ args = vars(ap.parse_args())
 # frames the eye must be below the threshold for to set off the
 # alarm
 EYE_AR_THRESH = 0.3
-EYE_AR_CLOSED = 0.2
+EYE_AR_CLOSE_THRESH = 0.2
+EYE_AR_OPEN_THRESH = 0.23
 EYE_AR_CONSEC_FRAMES = 48
 
 # initialize the frame counter as well as a boolean used to
@@ -41,6 +42,8 @@ ALARM_ON = False
 EYES_CLOSED = False
 BLINKING = 0
 BLINK_LENGTH = 0
+LAST_BLINK_LENGTH = 0
+AVERAGE_BLINK_LENGTH = 0
 
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
@@ -94,16 +97,21 @@ def main():
 		global EYES_CLOSED
 		global BLINKING
 		global BLINK_LENGTH
-		if EYES_CLOSED and ear > EYE_AR_CLOSED:
+		global LAST_BLINK_LENGTH
+		global AVERAGE_BLINK_LENGTH
+		if EYES_CLOSED and ear > EYE_AR_OPEN_THRESH:
 			BLINKING += 1
-		elif ear < EYE_AR_CLOSED:
+			LAST_BLINK_LENGTH = BLINK_LENGTH
+			BLINK_LENGTH = 0
+			EYES_CLOSED = False
+			AVERAGE_BLINK_LENGTH = LAST_BLINK_LENGTH if BLINKING == 1 else (AVERAGE_BLINK_LENGTH * BLINKING / (BLINKING + 1) + LAST_BLINK_LENGTH / (BLINKING + 1))
+			print("BLINKING: {}".format(BLINKING))
+			print("BLINK LENGTH: {}".format(LAST_BLINK_LENGTH))
+			print("AVERAGE_BLINK_LENGTH: {}".format(AVERAGE_BLINK_LENGTH))
+		elif ear < EYE_AR_CLOSE_THRESH:
 			BLINK_LENGTH += 1
+			EYES_CLOSED = True
 
-		# update if eyes are closed
-		EYES_CLOSED = ear < EYE_AR_CLOSED
-
-		print("EYES_CLOSED: {}".format(EYES_CLOSED))
-		print("BLINKING: {}".format(BLINKING))
 
 
 		# compute the convex hull for the left and right eye, then
