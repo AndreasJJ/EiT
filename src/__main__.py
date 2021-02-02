@@ -29,7 +29,7 @@ args = vars(ap.parse_args())
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold for to set off the
 # alarm
-EYE_AR_THRESH = 0.3
+EYE_AR_THRESH = 0.25
 EYE_AR_CLOSE_THRESH = 0.2
 EYE_AR_OPEN_THRESH = 0.23
 EYE_AR_CONSEC_FRAMES = 48
@@ -104,7 +104,7 @@ def main():
 			LAST_BLINK_LENGTH = BLINK_LENGTH
 			BLINK_LENGTH = 0
 			EYES_CLOSED = False
-			AVERAGE_BLINK_LENGTH = LAST_BLINK_LENGTH if BLINKING == 1 else (AVERAGE_BLINK_LENGTH * BLINKING / (BLINKING + 1) + LAST_BLINK_LENGTH / (BLINKING + 1))
+			AVERAGE_BLINK_LENGTH = LAST_BLINK_LENGTH if BLINKING == 1 else (AVERAGE_BLINK_LENGTH * (BLINKING-1) / BLINKING + LAST_BLINK_LENGTH / BLINKING)
 			print("BLINKING: {}".format(BLINKING))
 			print("BLINK LENGTH: {}".format(LAST_BLINK_LENGTH))
 			print("AVERAGE_BLINK_LENGTH: {}".format(AVERAGE_BLINK_LENGTH))
