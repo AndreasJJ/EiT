@@ -1,9 +1,25 @@
 from imutils import face_utils
 from scipy.spatial import distance as dist
+from dataclasses import dataclass
+from datetime import datetime
 
+'''
+Data class for an instance of a yawn
+To be used for aggregated analysis of yawning frequency
+'''
+@dataclass
+class yawn_instance:
+    timestamp: datetime
+    mar: float
+
+'''
+Class to detect yawning
+'''
 class yawn(object):
     cv = None
     threshold = None
+    yawns = []
+    is_yawning = False
 
     def __init__(self, cv2, threshold=0.4):
         super(yawn, self).__init__()
@@ -16,6 +32,10 @@ class yawn(object):
     def get_threshold(self, threshold):
         return self.threshold
 
+    '''
+    Function to calculate the mouth aspect ratio
+    A measurement on how open the mouth is
+    '''
     def mouth_aspect_ratio(self, mouth):
         # Points 49-60 found here https://www.pyimagesearch.com/wp-content/uploads/2017/04/facial_landmarks_68markup-768x619.jpg
         left = mouth[0]
@@ -38,27 +58,56 @@ class yawn(object):
         mar = (A + B) / (2.0 * C)
         return mar
 
+    '''
+    '''
+    def yawn_frequency(self):
+        pass
 
+    '''
+    '''
     def detect(self, frame, shape):
+        # Get the start and end point for outer and inner mouth
         (mouth_start, mouth_end) = face_utils.FACIAL_LANDMARKS_68_IDXS["mouth"];
         (inner_mouth_start, inner_mouth_end) = face_utils.FACIAL_LANDMARKS_68_IDXS["inner_mouth"];
 
+        # Get the shape of the inner and outer mouth
         mouth = shape[mouth_start:mouth_end]
         inner_mouth = shape[inner_mouth_start:inner_mouth_end]
 
+        # Create a convex hull shape with open cv that can be used to draw onto the face
         mouth_hull = self.cv.convexHull(mouth)
         inner_mouth_hull = self.cv.convexHull(inner_mouth)
 
+        # Draw the convex hull of the mouth onto the face
         self.__draw_mouth(frame, (mouth_hull, inner_mouth_hull))
 
+        # Get the MAR of the yawn
         mar = self.mouth_aspect_ratio(mouth)
+        # Draw the MAR value onto the screen
         self.__draw_mar(frame, mar)
+
+        # Add the yawn to the list of yawns if it's over the threshold
+        if (not self.is_yawning and mar > self.threshold):
+            self.is_yawning = True
+            new_yawn = yawn_instance(datetime.now(), mar)
+            self.yawns.append(new_yawn)
+        elif (self.is_yawning and mar > self.threshold):
+            if (self.yawns[-1].mar < mar):
+                setattr(self.yawns[-1], 'mar', mar)
+        elif (self.is_yawning and mar < self.threshold):
+            self.is_yawning = False
         return mar
 
+    '''
+    Private method to draw the mouth – both inner and outer – onto the face
+    '''
     def __draw_mouth(self, frame, contours):
         self.cv.drawContours(frame, [contours[0]], -1, (0, 0, 255), 1)
         self.cv.drawContours(frame, [contours[1]], -1, (0, 255, 255), 1)
 
+    '''
+    Private method to draw mar value to screen
+    '''
     def __draw_mar(self, frame, mar):
         self.cv.putText(frame, "MAR: {:.2f}".format(mar), (300, 60),
                self.cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
