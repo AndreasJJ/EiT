@@ -54,7 +54,7 @@ print("[INFO] starting video stream thread...")
 vs = VideoStream(src=args["webcam"]).start()
 time.sleep(1.0)
 
-yawn = yawn(cv)
+yawn = yawn(cv2)
 
 def kill():
     # do a bit of cleanup
