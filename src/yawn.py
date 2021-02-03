@@ -5,7 +5,7 @@ class yawn(object):
     cv = None
     threshold = None
 
-    def __init__(self, cv2, threshold=0.3):
+    def __init__(self, cv2, threshold=0.4):
         super(yawn, self).__init__()
         self.cv = cv2
         self.threshold = threshold
@@ -46,19 +46,19 @@ class yawn(object):
         mouth = shape[mouth_start:mouth_end]
         inner_mouth = shape[inner_mouth_start:inner_mouth_end]
 
-        mouth_hull = cv2.convexHull(mouth)
-        inner_mouth_hull = cv2.convexHull(inner_mouth)
+        mouth_hull = self.cv.convexHull(mouth)
+        inner_mouth_hull = self.cv.convexHull(inner_mouth)
 
-        __draw_mouth(frame, cv2, (mouth_hull, inner_mouth_hull))
+        self.__draw_mouth(frame, (mouth_hull, inner_mouth_hull))
 
-        mar = mouth_aspect_ratio(mouth)
-        __draw_mar(frame, cv2, mar)
+        mar = self.mouth_aspect_ratio(mouth)
+        self.__draw_mar(frame, mar)
         return mar
 
     def __draw_mouth(self, frame, contours):
-        cv2.drawContours(frame, [contours[0]], -1, (0, 0, 255), 1)
-        cv2.drawContours(frame, [contours[1]], -1, (0, 255, 255), 1)
+        self.cv.drawContours(frame, [contours[0]], -1, (0, 0, 255), 1)
+        self.cv.drawContours(frame, [contours[1]], -1, (0, 255, 255), 1)
 
-    def __draw_mar(self, frame, cv2, mar):
-        cv2.putText(frame, "MAR: {:.2f}".format(mar), (300, 60),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+    def __draw_mar(self, frame, mar):
+        self.cv.putText(frame, "MAR: {:.2f}".format(mar), (300, 60),
+               self.cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
