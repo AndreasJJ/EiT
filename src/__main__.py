@@ -54,6 +54,8 @@ print("[INFO] starting video stream thread...")
 vs = VideoStream(src=args["webcam"]).start()
 time.sleep(1.0)
 
+yawn = yawn(cv)
+
 def kill():
     # do a bit of cleanup
     cv2.destroyAllWindows()
@@ -78,7 +80,8 @@ def main():
 		shape = predictor(gray, rect)
 		shape = face_utils.shape_to_np(shape)
 
-		detect_yawn(frame, shape, cv2)
+		# Detect yawns
+		yawn.detect(frame, shape, cv2)
 
 		# extract the left and right eye coordinates, then use the
 		# coordinates to compute the eye aspect ratio for both eyes
