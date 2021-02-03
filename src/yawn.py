@@ -2,6 +2,7 @@ from imutils import face_utils
 from scipy.spatial import distance as dist
 from dataclasses import dataclass
 from datetime import datetime
+import math
 
 '''
 Data class for an instance of a yawn
@@ -59,6 +60,26 @@ class yawn(object):
         return mar
 
     '''
+    The mathematical sigmoid function
+    '''
+    def sigmoid(self, x):
+        return 1 / (1 + math.exp(-x))
+
+    '''
+    A mathematical function that calculates the yawning score based on
+    the amount of yawns per hour
+    '''
+    def yawning_score(self, x):
+        return self.sigmoid(x - 1.5) - 0.18 * math.pow(-x, 3)
+
+    '''
+    source: https://pubmed.ncbi.nlm.nih.gov/20357461/
+    yawns per hour:
+        0: awake
+        1: starting to get tired
+        1-2: somewhat tired
+        2-3: tired
+        3-3+: Danger
     '''
     def yawn_frequency(self):
         pass
