@@ -14,7 +14,7 @@ import cv2
 # custom imports
 from eye import eye_aspect_ratio
 from alarm import sound_alarm
-from yawn import detect_yawn
+from yawn import yawn
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
