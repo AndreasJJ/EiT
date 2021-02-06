@@ -81,7 +81,7 @@ def main():
 		shape = face_utils.shape_to_np(shape)
 
 		# Detect yawns
-		yawn.detect(frame, shape)
+		yawning_score = yawn.detect(frame, shape)
 
 		# extract the left and right eye coordinates, then use the
 		# coordinates to compute the eye aspect ratio for both eyes

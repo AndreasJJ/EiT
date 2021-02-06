@@ -3,6 +3,8 @@ from scipy.spatial import distance as dist
 from dataclasses import dataclass
 from datetime import datetime
 import math
+from collections import defaultdict
+from functools import reduce
 
 '''
 Data class for an instance of a yawn
@@ -70,7 +72,7 @@ class yawn(object):
     the amount of yawns per hour
     '''
     def yawning_score(self, x):
-        return self.sigmoid(x - 1.5) - 0.18 * math.pow(-x, 3)
+        return self.sigmoid(x - 1.5) - 0.18 * math.exp(-math.pow(x, 3))
 
     '''
     source: https://pubmed.ncbi.nlm.nih.gov/20357461/
@@ -82,7 +84,15 @@ class yawn(object):
         3-3+: Danger
     '''
     def yawn_frequency(self):
-        pass
+        timestamps = list(map(lambda x: x.timestamp, self.yawns))
+        occurences_per_hour = defaultdict(int)
+        for occurrence in timestamps:
+            occurences_per_hour[occurrence.strftime('%Y-%m-%d %H')] += 1
+        if (len(occurences_per_hour) > 0):
+            return sum(occurences_per_hour.values())/len(occurences_per_hour)
+        else:
+            return 0
+
 
     '''
     '''
@@ -112,12 +122,13 @@ class yawn(object):
             self.is_yawning = True
             new_yawn = yawn_instance(datetime.now(), mar)
             self.yawns.append(new_yawn)
+            self.yawn_frequency()
         elif (self.is_yawning and mar > self.threshold):
             if (self.yawns[-1].mar < mar):
                 setattr(self.yawns[-1], 'mar', mar)
         elif (self.is_yawning and mar < self.threshold):
             self.is_yawning = False
-        return mar
+        return self.yawning_score(self.yawn_frequency())
 
     '''
     Private method to draw the mouth – both inner and outer – onto the face
