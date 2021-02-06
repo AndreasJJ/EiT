@@ -5,4 +5,3 @@ playsound
 dlib
 opencv-python
 pyobjc
-pandas

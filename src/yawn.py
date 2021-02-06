@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 import math
 from collections import defaultdict
-from functools import reduce
 
 '''
 Data class for an instance of a yawn
