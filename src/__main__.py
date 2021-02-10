@@ -14,6 +14,7 @@ import cv2
 # custom imports
 from eye import eye_aspect_ratio
 from alarm import sound_alarm
+from yawn import yawn
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -53,6 +54,8 @@ print("[INFO] starting video stream thread...")
 vs = VideoStream(src=args["webcam"]).start()
 time.sleep(1.0)
 
+yawn = yawn(cv2)
+
 def kill():
     # do a bit of cleanup
     cv2.destroyAllWindows()
@@ -76,6 +79,10 @@ def main():
 		# array
 		shape = predictor(gray, rect)
 		shape = face_utils.shape_to_np(shape)
+
+		# Detect yawns
+		yawning_score = yawn.detect(frame, shape)
+		print('yawning_score: {}'.format(yawning_score))
 
 		# extract the left and right eye coordinates, then use the
 		# coordinates to compute the eye aspect ratio for both eyes
