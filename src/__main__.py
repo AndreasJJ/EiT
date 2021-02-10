@@ -14,6 +14,7 @@ import cv2
 # custom imports
 from eye import compute_ear
 from alarm import sound_alarm
+from blink import blink
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -21,6 +22,8 @@ ap.add_argument("-p", "--shape-predictor", required=True,
     help="path to facial landmark predictor")
 ap.add_argument("-a", "--alarm", type=str, default="",
     help="path alarm .WAV file")
+ap.add_argument("-n", "--notification", type=str, default="",
+    help="path notofication .WAV file")
 ap.add_argument("-w", "--webcam", type=int, default=0,
     help="index of webcam on system")
 args = vars(ap.parse_args())
@@ -29,21 +32,22 @@ args = vars(ap.parse_args())
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold for to set off the
 # alarm
-EYE_AR_THRESH = 0.25
-EYE_AR_CLOSE_THRESH = 0.2
-EYE_AR_OPEN_THRESH = 0.23
-EYE_AR_CONSEC_FRAMES = 48
+EYE_AR_THRESH = 0.22
+
+DAMPED_EAR = 0.3
+DAMPING_WEIGHT = 0.07
 
 # initialize the frame counter as well as a boolean used to
 # indicate if the alarm is going off
 COUNTER = 0
+##moving_average = 0.3
+##MOVING_AVERAGE_WEIGHT = 0.013
+##SLEEPY_AVERAGE = 0.15
+SLEEPY = False
 ALARM_ON = False
+NOTIFICATION_ON = False
 
-EYES_CLOSED = False
-BLINKING = 0
-BLINK_LENGTH = 0
-LAST_BLINK_LENGTH = 0
-AVERAGE_BLINK_LENGTH = 0
+EYE_AR_CONSEC_FRAMES = 48
 
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
@@ -60,6 +64,8 @@ predictor = dlib.shape_predictor(args["shape_predictor"])
 print("[INFO] starting video stream thread...")
 vs = VideoStream(src=args["webcam"]).start()
 time.sleep(1.0)
+
+blink = blink()
 
 def kill():
     # do a bit of cleanup
@@ -94,23 +100,15 @@ def main():
 
 		# if the eye was closed and is now open
 		# there was a blink,
-		global EYES_CLOSED
-		global BLINKING
-		global BLINK_LENGTH
-		global LAST_BLINK_LENGTH
-		global AVERAGE_BLINK_LENGTH
-		if EYES_CLOSED and ear > EYE_AR_OPEN_THRESH:
-			BLINKING += 1
-			LAST_BLINK_LENGTH = BLINK_LENGTH
-			BLINK_LENGTH = 0
-			EYES_CLOSED = False
-			AVERAGE_BLINK_LENGTH = LAST_BLINK_LENGTH if BLINKING == 1 else (AVERAGE_BLINK_LENGTH * (BLINKING-1) / BLINKING + LAST_BLINK_LENGTH / BLINKING)
-			print("BLINKING: {}".format(BLINKING))
-			print("BLINK LENGTH: {}".format(LAST_BLINK_LENGTH))
-			print("AVERAGE_BLINK_LENGTH: {}".format(AVERAGE_BLINK_LENGTH))
-		elif ear < EYE_AR_CLOSE_THRESH:
-			BLINK_LENGTH += 1
-			EYES_CLOSED = True
+		blink.detect(ear)
+
+		global DAMPED_EAR
+		# average the eye aspect ratio together for both eyes
+		# Removed noise from ear with MA-filter (low pass filter)
+		DAMPED_EAR = DAMPED_EAR + DAMPING_WEIGHT * (ear - DAMPED_EAR)
+
+		#calculates the moving average of the eye
+		##moving_average = moving_average + MOVING_AVERAGE_WEIGHT * (ear - moving_average)
 
 
 
@@ -124,8 +122,11 @@ def main():
 		# check to see if the eye aspect ratio is below the blink
 		# threshold, and if so, increment the blink frame counter
 		global COUNTER
+		##global moving_average
+		global SLEEPY
 		global ALARM_ON
-		if ear < EYE_AR_THRESH:
+		global NOTIFICATION_ON
+		if DAMPED_EAR < EYE_AR_THRESH:
 			COUNTER += 1
 
 			# if the eyes were closed for a sufficient number of
@@ -139,25 +140,39 @@ def main():
 					# and if so, start a thread to have the alarm
 					# sound played in the background
 					if args["alarm"] != "":
-						t = Thread(target=sound_alarm,
+						t1 = Thread(target=sound_alarm,
 							args=(args["alarm"],))
-						t.deamon = True
-						t.start()
+						t1.deamon = True
+						t1.start()
 
 				# draw an alarm on the frame
-				cv2.putText(frame, "DROWSINESS ALERT!", (10, 30),
+				cv2.putText(frame, "WAKE UP!", (10, 30),
 					cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
 		# otherwise, the eye aspect ratio is not below the blink
 		# threshold, so reset the counter and alarm
 		else:
 			COUNTER = 0
 			ALARM_ON = False
+		
+		if SLEEPY:
+			if not NOTIFICATION_ON: 
+				NOTIFICATION_ON = True
+				if args["notification"] != "":
+						t2 = Thread(target=sound_alarm,
+							args=(args["notification"],))
+						t2.deamon = True
+						t2.start()
+			cv2.putText(frame, "Take a coffee or powernap", (10, 200),
+				cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+		else: 
+			NOTIFICATION_ON = False
 
 		# draw the computed eye aspect ratio on the frame to help
 		# with debugging and setting the correct eye aspect ratio
 		# thresholds and frame counters
-		cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
+		cv2.putText(frame, "dampedEAR: {:.2f}".format(DAMPED_EAR), (200, 30),
+			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+		cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 50),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
  
 	# show the frame
