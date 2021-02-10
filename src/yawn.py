@@ -94,6 +94,9 @@ class yawn(object):
 
 
     '''
+    Method that uses the mouth (inner, outer) to detect yawns,
+    whereas if they are longer than 3 seconds they get added to the list of yawns
+    returns: a yawning score based on the yawn_frequency and the yawning_score
     '''
     def detect(self, frame, shape):
         # Get the start and end point for outer and inner mouth
