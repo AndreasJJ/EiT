@@ -100,7 +100,7 @@ def main():
 
 		# if the eye was closed and is now open
 		# there was a blink,
-		blink.detect(ear)
+		blink.get_blink_score(ear)
 
 		global DAMPED_EAR
 		# average the eye aspect ratio together for both eyes
