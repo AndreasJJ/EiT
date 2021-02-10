@@ -21,7 +21,7 @@ class yawn(object):
     cv = None
     threshold = None
     yawns = []
-    is_yawning = False
+    current_yawn = None
 
     def __init__(self, cv2, threshold=0.4):
         super(yawn, self).__init__()
@@ -117,16 +117,20 @@ class yawn(object):
         self.__draw_mar(frame, mar)
 
         # Add the yawn to the list of yawns if it's over the threshold
-        if (not self.is_yawning and mar > self.threshold):
-            self.is_yawning = True
-            new_yawn = yawn_instance(datetime.now(), mar)
-            self.yawns.append(new_yawn)
-            self.yawn_frequency()
-        elif (self.is_yawning and mar > self.threshold):
-            if (self.yawns[-1].mar < mar):
-                setattr(self.yawns[-1], 'mar', mar)
-        elif (self.is_yawning and mar < self.threshold):
-            self.is_yawning = False
+        # 
+        # The average yawn lasts about 6 seconds: https://www.sciencemag.org/news/2016/10/bigger-your-brain-longer-you-yawn
+        # Setting a lower limit of 3.0 seconds should be good enough to captuer most yawns
+        # While not getting false negatives
+        if (self.current_yawn == None and mar > self.threshold):
+            self.current_yawn = yawn_instance(datetime.now(), mar)
+        elif (self.current_yawn != None and mar > self.threshold):
+            if (self.current_yawn.mar < mar):
+                setattr(self.current_yawn, 'mar', mar)
+        elif (self.current_yawn != None and mar < self.threshold):
+            timedelta = (datetime.now() - self.current_yawn.timestamp).total_seconds();
+            if (timedelta > 3.0):
+                self.yawns.append(self.current_yawn)
+            self.current_yawn = None
         return self.yawning_score(self.yawn_frequency())
 
     '''

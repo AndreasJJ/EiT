@@ -82,6 +82,7 @@ def main():
 
 		# Detect yawns
 		yawning_score = yawn.detect(frame, shape)
+		print('yawning_score: {}'.format(yawning_score))
 
 		# extract the left and right eye coordinates, then use the
 		# coordinates to compute the eye aspect ratio for both eyes
