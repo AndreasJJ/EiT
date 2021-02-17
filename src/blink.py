@@ -39,11 +39,12 @@ class blink():
     def get_blink_score(self, ear):
         self.update_information(ear)
         short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
-        if len(self.blinking_history) == 0: return 0
+        if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0
         short_term_average_blink_duration = sum(list(map(lambda x: x.duration, short_term_blinking_history))) / len(short_term_blinking_history)
         long_term_average_blink_duration = sum(list(map(lambda x: x.duration, self.blinking_history))) / len(self.blinking_history)
         short_term_duration = (datetime.now() - short_term_blinking_history[0].get_timestamp()).total_seconds() * 1/60
         long_term_duration = (datetime.now() - self.blinking_history[0].get_timestamp()).total_seconds() * 1/60
+        if short_term_duration == 0 or long_term_duration == 0: return 0
         short_term_frequency = len(short_term_blinking_history) / short_term_duration
         long_term_frequency = len(self.blinking_history) / long_term_duration
 
@@ -51,7 +52,7 @@ class blink():
         if self.just_blinked:
             print("SHORT TERM")
             print("Duration: {:.2f} seconds pr blink".format(short_term_average_blink_duration))
-            print("Frequncy: {:.2f}\n blink pr minute".format(short_term_frequency))
+            print("Frequncy: {:.2f} blink pr minute".format(short_term_frequency))
             print("LONG TERM")
             print("Duration: {:.2f} seconds pr blink".format(long_term_average_blink_duration))
             print("Frequncy: {:.2f} blink pr minute".format(long_term_frequency))
