@@ -19,12 +19,13 @@ class blink():
     eye_open_thresh = 0.24
     blinking_history = []
     current_blink = None
+    just_blinked = False
 
     def __init__(self):
         super(blink, self).__init__()
 
     def update_information(self, ear):
-        self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(seconds=30), self.blinking_history))
+        self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
         if self.current_blink == None and ear < self.eye_closed_thresh:
             self.current_blink = blink_instance(datetime.now(), 1)
         elif self.current_blink != None and ear < self.eye_open_thresh:
@@ -41,10 +42,11 @@ class blink():
             # print("short average: {}".format(short_term_average_blink_duration))
             # print("long average: {}".format(long_term_average_blink_duration))
             self.current_blink = None
+            self.just_blinked = True
 
     def get_blink_score(self, ear):
         self.update_information(ear)
-        short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(seconds=15), self.blinking_history))
+        short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
         if len(self.blinking_history) == 0: return 0
         short_term_average_blink_duration = sum(list(map(lambda x: x.duration, short_term_blinking_history))) / len(short_term_blinking_history)
         long_term_average_blink_duration = sum(list(map(lambda x: x.duration, self.blinking_history))) / len(self.blinking_history)
@@ -52,7 +54,14 @@ class blink():
         long_term_duration = (datetime.now() - self.blinking_history[0].get_timestamp()).total_seconds() * 1/60
         short_term_frequency = len(short_term_blinking_history) / short_term_duration
         long_term_frequency = len(self.blinking_history) / long_term_duration
-        print(short_term_frequency)
-        print(long_term_frequency)
+        if self.just_blinked:
+            print("SHORT TERM")
+            print("Duration: {:.2f}".format(short_term_average_blink_duration))
+            print("Frequncy: {:.2f}\n".format(short_term_frequency))
+            print("LONG TERM")
+            print("Duration: {:.2f}".format(long_term_average_blink_duration))
+            print("Frequncy: {:.2f}".format(long_term_frequency))
+            print("----------------")
+            self.just_blinked = False
 
 
