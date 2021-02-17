@@ -19,7 +19,7 @@ class blink():
     eye_open_thresh = 0.24
     blinking_history = []
     current_blink = None
-    just_blinked = False
+    just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR
 
     def __init__(self):
         super(blink, self).__init__()
@@ -33,14 +33,6 @@ class blink():
             setattr(self.current_blink, 'duration', new_blink_length)
         elif self.current_blink != None and ear > self.eye_open_thresh: 
             self.blinking_history.append(self.current_blink)
-            # print(self.current_blink.get_duration())
-            # short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(seconds=15), self.blinking_history))
-            # long_term_average_blink_duration = sum(list(map(lambda x: x.duration, self.blinking_history))) / len(self.blinking_history)
-            # short_term_average_blink_duration = sum(list(map(lambda x: x.duration, short_term_blinking_history))) / len(short_term_blinking_history)
-            # print("short number: {}".format(len(short_term_blinking_history)))
-            # print("long number: {}".format(len(self.blinking_history)))
-            # print("short average: {}".format(short_term_average_blink_duration))
-            # print("long average: {}".format(long_term_average_blink_duration))
             self.current_blink = None
             self.just_blinked = True
 
@@ -54,6 +46,8 @@ class blink():
         long_term_duration = (datetime.now() - self.blinking_history[0].get_timestamp()).total_seconds() * 1/60
         short_term_frequency = len(short_term_blinking_history) / short_term_duration
         long_term_frequency = len(self.blinking_history) / long_term_duration
+
+        # ONLY FOR PRINTING, CAN BE REMOVED LATER ON
         if self.just_blinked:
             print("SHORT TERM")
             print("Duration: {:.2f} seconds pr blink".format(short_term_average_blink_duration))
