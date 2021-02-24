@@ -15,15 +15,22 @@ class blink_instance:
         return self.timestamp
 
 class blink():
-    eye_closed_thresh = 0.19
-    eye_open_thresh = 0.24
+    eye_closed_thresh = 0.17
+    eye_open_thresh = 0.17
     blinking_history = []
     current_blink = None
-    just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR
+    just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR 
 
     def __init__(self):
         super(blink, self).__init__()
 
+
+    # UPDATE THRESHOLDS AFTER EAR IS CONFIGURED
+    def set_thresh(configured_ear):
+        self.eye_open_thresh = 0.6 * configured_ear
+        self.eye_closed_thresh = 0.55 * configured_ear
+
+    # UPDATE BLINKING HISTORY WITH NEW INFORMATION
     def update_information(self, ear):
         self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
         if self.current_blink == None and ear < self.eye_closed_thresh:
@@ -32,11 +39,20 @@ class blink():
             new_blink_length = self.current_blink.get_duration() + 1 
             setattr(self.current_blink, 'duration', new_blink_length)
         elif self.current_blink != None and ear > self.eye_open_thresh: 
-            self.blinking_history.append(self.current_blink)
+            if self.current_blink.duration < 30:
+                self.blinking_history.append(self.current_blink)
+                self.just_blinked = True
             self.current_blink = None
-            self.just_blinked = True
 
+    # WRITE RESULTS TO FILE
+    def write_to_file(self, ear):
+        f = open("blinking.csv", "a")
+        f.write("{:.3f}".format(ear).replace(".", ",") + "\n")
+        f.close()
+
+    # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
     def get_blink_score(self, ear):
+        self.write_to_file(ear)
         self.update_information(ear)
         short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
         if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0

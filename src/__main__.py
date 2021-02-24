@@ -32,7 +32,7 @@ args = vars(ap.parse_args())
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold for to set off the
 # alarm
-EYE_AR_THRESH = 0.18
+EYE_AR_THRESH = 0.15
 
 DAMPED_EAR = 0.3
 DAMPING_WEIGHT = 0.07
