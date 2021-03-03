@@ -21,10 +21,10 @@ class Config():
         while len(self.EAR_LOG) < self.LOG_FILLED_SIZE:
             EAR_data = self.q_messured.get()
             self.EAR_LOG.append(EAR_data)
-        self.get_median_log()
+        self.set_median_log()
         self.CONFIG_FINNISHED = True
 
-    def get_median_log(self):
+    def set_median_log(self):
         self.EAR_LOG.sort()
         self.MEDIAN = self.EAR_LOG[floor(self.LOG_FILLED_SIZE/2)]
   

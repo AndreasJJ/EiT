@@ -42,6 +42,7 @@ args = vars(ap.parse_args())
 
 FIRST = True
 EYE_AR_THRESH = 0.2 # was 0.3
+EYE_AR_MEDIAN = 0.28
 DAMPED_EAR = 0.3
 DAMPING_WEIGHT = 0.07
 EYE_AR_CONSEC_FRAMES = 48 # was 48 before
@@ -75,7 +76,7 @@ time.sleep(1.0)
 
 blink = blink()
 
-c1 = Config(EYE_AR_THRESH, CONFIG_MIN_TIME)
+c1 = Config(EYE_AR_MEDIAN, CONFIG_MIN_TIME)
 
 def kill():
     # do a bit of cleanup
@@ -120,14 +121,17 @@ def main():
 		# average the eye aspect ratio together for both eyes
 		# Removed noise from ear with MA-filter (low pass filter)
 		DAMPED_EAR = DAMPED_EAR + DAMPING_WEIGHT * (ear - DAMPED_EAR)
-		EYE_AR_THRESH = c1.get_config_parameter(DAMPED_EAR)
+		EYE_AR_MEDIAN = c1.get_config_parameter(DAMPED_EAR)
+
+		global EYE_AR_THRESH
+		EYE_AR_THRESH = EYE_AR_MEDIAN * 0.6
 
 		#calculates the moving average of the eye
 		##moving_average = moving_average + MOVING_AVERAGE_WEIGHT * (ear - moving_average)
 
 		global FIRST
 
-		blink_score = blink.get_blink_score(ear, EYE_AR_THRESH, FIRST, args["name"])
+		blink_score = blink.get_blink_score(ear, EYE_AR_MEDIAN, FIRST, args["name"])
 
 		FIRST = False
 
@@ -194,6 +198,8 @@ def main():
 		cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 50),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 		cv2.putText(frame, "tresh: {:.2f}".format(EYE_AR_THRESH), (300, 70),
+			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+		cv2.putText(frame, "median: {:.2f}".format(EYE_AR_MEDIAN), (300, 90),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
  
 	# show the frame
