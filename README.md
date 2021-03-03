@@ -14,4 +14,11 @@ Be in the EiT folder
 
 Command: `python src/__main__.py --shape-predictor src/datasets/shape_predictor_68_face_landmarks.dat -a src/audio/alarm.wav -n src/audio/notification.wav`
 
-Command: `python3 src/__main__.py --shape-predictor src/datasets/shape_predictor_68_face_landmarks.dat -a src/audio/alarm.wav -n src/audio/notification.wav`
+Command: `python3 src --shape-predictor src/datasets/shape_predictor_68_face_landmarks.dat -a src/audio/alarm.wav -n src/audio/notification.wav`
+
+# Information
+The face is divided up into 68 points as seen in the picture below:
+![face](https://github.com/AndreasJJ/EiT/blob/main/images/facial_landmarks_68markup.jpg?raw=true)
+## MAR
+The mar is calculated from points 49-60 By getting the length of A, B, and C as seen below:
+![face](https://github.com/AndreasJJ/EiT/blob/main/images/MAR.jpg?raw=true)

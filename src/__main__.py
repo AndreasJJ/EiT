@@ -16,6 +16,7 @@ from blink import blink
 from eye import eye_aspect_ratio, compute_ear
 from alarm import sound_warnings
 from config import Config
+from yawn import yawn
 
 # Use the following to execute: 
 # "python src/__main__.py --shape-predictor src/datasets/shape_predictor_68_face_landmarks.dat -a src/audio/alarm.wav -n src/audio/notification.wav"
@@ -77,6 +78,7 @@ time.sleep(1.0)
 blink = blink()
 
 c1 = Config(EYE_AR_MEDIAN, CONFIG_MIN_TIME)
+yawn = yawn(cv2)
 
 def kill():
     # do a bit of cleanup
@@ -104,6 +106,12 @@ def main():
 		shape = face_utils.shape_to_np(shape)
 
 		# extract the left and right eye coordinates
+		# Detect yawns
+		yawning_score = yawn.detect(frame, shape)
+		print('yawning_score: {}'.format(yawning_score))
+
+		# extract the left and right eye coordinates, then use the
+		# coordinates to compute the eye aspect ratio for both eyes
 		leftEye = shape[lStart:lEnd]
 		rightEye = shape[rStart:rEnd]
 
