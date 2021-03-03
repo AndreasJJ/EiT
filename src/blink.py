@@ -1,6 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 from dataclasses import dataclass
+import os
 
 
 @dataclass
@@ -45,14 +46,16 @@ class blink():
             self.current_blink = None
 
     # WRITE RESULTS TO FILE
-    def write_to_file(self, ear):
-        f = open("blinking.csv", "a")
-        f.write("{:.3f}".format(ear).replace(".", ",") + "\n")
+    def write_to_file(self, ear, first, name):
+        f = open("blinking.txt", "a")
+        fileIsEmpty = os.stat("blinking.txt").st_size == 0
+        if first: f.write(("" if fileIsEmpty else "\n") + name + ";")
+        f.write("{:.3f}".format(ear) + ";")
         f.close()
 
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
-    def get_blink_score(self, ear):
-        self.write_to_file(ear)
+    def get_blink_score(self, ear, first, name):
+        self.write_to_file(ear, first, name)
         self.update_information(ear)
         short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
         if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0

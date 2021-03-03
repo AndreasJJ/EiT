@@ -26,6 +26,8 @@ ap.add_argument("-n", "--notification", type=str, default="",
     help="path notofication .WAV file")
 ap.add_argument("-w", "--webcam", type=int, default=0,
     help="index of webcam on system")
+ap.add_argument("-na", "--name", type=str, default="NN",
+		help="name of person using the system")
 args = vars(ap.parse_args())
 
 # define two constants, one for the eye aspect ratio to indicate
@@ -36,6 +38,8 @@ EYE_AR_THRESH = 0.15
 
 DAMPED_EAR = 0.3
 DAMPING_WEIGHT = 0.07
+
+FIRST = True
 
 # initialize the frame counter as well as a boolean used to
 # indicate if the alarm is going off
@@ -100,7 +104,13 @@ def main():
 
 		# if the eye was closed and is now open
 		# there was a blink,
-		blink.get_blink_score(ear)
+		global FIRST
+
+
+
+		blink.get_blink_score(ear, FIRST, args["name"])
+
+		FIRST = False
 
 		global DAMPED_EAR
 		# average the eye aspect ratio together for both eyes
