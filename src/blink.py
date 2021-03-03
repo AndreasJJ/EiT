@@ -61,6 +61,9 @@ class blink():
         short_term_frequency = len(short_term_blinking_history) / short_term_duration
         long_term_frequency = len(self.blinking_history) / long_term_duration
 
+        shift_in_average_blink_duration_in_percent_of_long_term = (short_term_average_blink_duration - long_term_average_blink_duration) / long_term_average_blink_duration
+        shift_in_blink_frequency_in_percent_of_long_term = (short_term_frequency - long_term_frequency) / long_term_frequency
+
         # ONLY FOR PRINTING, CAN BE REMOVED LATER ON
         if self.just_blinked:
             print("SHORT TERM")
@@ -71,5 +74,11 @@ class blink():
             print("Frequncy: {:.2f} blink pr minute".format(long_term_frequency))
             print("----------------------------------")
             self.just_blinked = False
+        
+        shift_percentage_sum = shift_in_average_blink_duration_in_percent_of_long_term + shift_in_blink_frequency_in_percent_of_long_term
+
+        if shift_percentage_sum < 0: return 0
+        if shift_percentage_sum > 1: return 1
+        return shift_percentage_sum
 
 

@@ -126,8 +126,8 @@ def main():
 		##moving_average = moving_average + MOVING_AVERAGE_WEIGHT * (ear - moving_average)
 
 		global FIRST
-		
-		blink.get_blink_score(ear, EYE_AR_THRESH, FIRST, args["name"])
+
+		blink_score = blink.get_blink_score(ear, EYE_AR_THRESH, FIRST, args["name"])
 
 		FIRST = False
 
