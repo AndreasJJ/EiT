@@ -13,7 +13,7 @@ import cv2
 
 # custom imports
 from blink import blink
-from eye import eye_aspect_ratio
+from eye import eye_aspect_ratio, compute_ear
 from alarm import sound_warnings
 from config import Config
 
@@ -115,7 +115,6 @@ def main():
 
 
 
-		blink.get_blink_score(ear, FIRST, args["name"])
 
 		FIRST = False
 
@@ -128,6 +127,7 @@ def main():
 		#calculates the moving average of the eye
 		##moving_average = moving_average + MOVING_AVERAGE_WEIGHT * (ear - moving_average)
 
+		blink.get_blink_score(ear, FIRST, args["name"])
 
 
 		# compute the convex hull for the left and right eye, then

@@ -16,8 +16,6 @@ class blink_instance:
         return self.timestamp
 
 class blink():
-    eye_closed_thresh = 0.17
-    eye_open_thresh = 0.17
     blinking_history = []
     current_blink = None
     just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR 
@@ -25,21 +23,17 @@ class blink():
     def __init__(self):
         super(blink, self).__init__()
 
-
-    # UPDATE THRESHOLDS AFTER EAR IS CONFIGURED
-    def set_thresh(configured_ear):
-        self.eye_open_thresh = 0.6 * configured_ear
-        self.eye_closed_thresh = 0.55 * configured_ear
-
     # UPDATE BLINKING HISTORY WITH NEW INFORMATION
-    def update_information(self, ear):
+    def update_information(self, ear, ear_thresh):
+        eye_open_thresh = 0.6 * configured_ear
+        eye_closed_thresh = 0.55 * configured_ear
         self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
-        if self.current_blink == None and ear < self.eye_closed_thresh:
+        if self.current_blink == None and ear < eye_closed_thresh:
             self.current_blink = blink_instance(datetime.now(), 1)
-        elif self.current_blink != None and ear < self.eye_open_thresh:
+        elif self.current_blink != None and ear < eye_open_thresh:
             new_blink_length = self.current_blink.get_duration() + 1 
             setattr(self.current_blink, 'duration', new_blink_length)
-        elif self.current_blink != None and ear > self.eye_open_thresh: 
+        elif self.current_blink != None and ear > eye_open_thresh: 
             if self.current_blink.duration < 30:
                 self.blinking_history.append(self.current_blink)
                 self.just_blinked = True
@@ -54,9 +48,9 @@ class blink():
         f.close()
 
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
-    def get_blink_score(self, ear, first, name):
+    def get_blink_score(self, ear, ear_thresh, first, name):
         self.write_to_file(ear, first, name)
-        self.update_information(ear)
+        self.update_information(ear, ear_thresh)
         short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
         if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0
         short_term_average_blink_duration = sum(list(map(lambda x: x.duration, short_term_blinking_history))) / len(short_term_blinking_history)
