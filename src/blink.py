@@ -25,8 +25,8 @@ class blink():
 
     # UPDATE BLINKING HISTORY WITH NEW INFORMATION
     def update_information(self, ear, ear_thresh):
-        eye_open_thresh = 0.6 * configured_ear
-        eye_closed_thresh = 0.55 * configured_ear
+        eye_open_thresh = 0.8 * ear_thresh
+        eye_closed_thresh = 0.8 * ear_thresh
         self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
         if self.current_blink == None and ear < eye_closed_thresh:
             self.current_blink = blink_instance(datetime.now(), 1)
@@ -49,7 +49,7 @@ class blink():
 
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
     def get_blink_score(self, ear, ear_thresh, first, name):
-        self.write_to_file(ear, first, name)
+        if name != "NN": self.write_to_file(ear, first, name)
         self.update_information(ear, ear_thresh)
         short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
         if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0

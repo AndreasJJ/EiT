@@ -111,12 +111,10 @@ def main():
 
 		# if the eye was closed and is now open
 		# there was a blink,
-		global FIRST
 
 
 
 
-		FIRST = False
 
 		global DAMPED_EAR
 		# average the eye aspect ratio together for both eyes
@@ -127,8 +125,11 @@ def main():
 		#calculates the moving average of the eye
 		##moving_average = moving_average + MOVING_AVERAGE_WEIGHT * (ear - moving_average)
 
-		blink.get_blink_score(ear, FIRST, args["name"])
+		global FIRST
+		
+		blink.get_blink_score(ear, EYE_AR_THRESH, FIRST, args["name"])
 
+		FIRST = False
 
 		# compute the convex hull for the left and right eye, then
 		# visualize each of the eyes
