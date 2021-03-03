@@ -28,7 +28,7 @@ def main():
       if name_from_list == name_from_args: 
         plot.savefig("{}_blinking.png".format(name_from_list))
         break
-  if name_from_list == "all": plot.savefig("blinking.png")
+  if name_from_args == "all": plot.savefig("blinking.png")
     
 
 if __name__ == "__main__":
