@@ -77,7 +77,7 @@ class blink():
         
         shift_percentage_sum = shift_in_average_blink_duration_in_percent_of_long_term + shift_in_blink_frequency_in_percent_of_long_term
 
-        if shift_percentage_sum < 0: return 0
+        if shift_percentage_sum < 0.01: return 0
         if shift_percentage_sum > 1: return 1
         return shift_percentage_sum
 
