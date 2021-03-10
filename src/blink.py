@@ -24,33 +24,45 @@ class blink():
         super(blink, self).__init__()
 
     # UPDATE BLINKING HISTORY WITH NEW INFORMATION
-    def update_information(self, ear, ear_median):
-        eye_open_thresh = 0.7 * ear_median
-        eye_closed_thresh = 0.7 * ear_median
+    def update_information(self, ear, damped_ear, ear_median, first, name):
+        thresh = 0.05
+        if name != "NN": 
+            self.write_to_file("blinking", ear, first, name)
+            self.write_to_file("damped_ear", damped_ear, first, name)
+            self.write_to_file("thresh", damped_ear - thresh, first, name)
         self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
-        if self.current_blink == None and ear < eye_closed_thresh:
+        if self.current_blink == None and damped_ear - ear > thresh:
+            if name != "NN": self.write_to_file("is_blinking", 0.05, first, name)
             self.current_blink = blink_instance(datetime.now(), 1)
-        elif self.current_blink != None and ear < eye_open_thresh:
+        elif self.current_blink != None and damped_ear - ear > thresh:
+            if name != "NN": self.write_to_file("is_blinking", 0.05, first, name)
             new_blink_length = self.current_blink.get_duration() + 1 
             setattr(self.current_blink, 'duration', new_blink_length)
-        elif self.current_blink != None and ear > eye_open_thresh: 
+        elif self.current_blink != None and damped_ear - ear < 0.1: 
+            if name != "NN": self.write_to_file("is_blinking", 0, first, name)
             if self.current_blink.duration < 30:
                 self.blinking_history.append(self.current_blink)
                 self.just_blinked = True
             self.current_blink = None
+        else:
+            if name != "NN": self.write_to_file("is_blinking", 0, first, name)
+        self.last_ear = ear
+        self.last_damped_ear = damped_ear
 
     # WRITE RESULTS TO FILE
-    def write_to_file(self, ear, first, name):
-        f = open("blinking.txt", "a")
-        fileIsEmpty = os.stat("blinking.txt").st_size == 0
-        if first: f.write(("" if fileIsEmpty else "\n") + name + ";")
-        f.write("{:.3f}".format(ear) + ";")
+    def write_to_file(self, file_name, value, first, name):
+        path = "tests/{}".format(name)
+        way_of_opening = "w" if first else "a"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        f = open("{}/{}.txt".format(path, file_name), way_of_opening)
+        if first: f.write(name + ";")
+        f.write("{:.3f}".format(value) + ";")
         f.close()
 
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
-    def get_blink_score(self, ear, ear_thresh, first, name):
-        if name != "NN": self.write_to_file(ear, first, name)
-        self.update_information(ear, ear_thresh)
+    def get_blink_score(self, ear, damped_ear, ear_thresh, first, name):
+        self.update_information(ear, damped_ear, ear_thresh, first, name)
         short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
         if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0
         short_term_average_blink_duration = sum(list(map(lambda x: x.duration, short_term_blinking_history))) / len(short_term_blinking_history)

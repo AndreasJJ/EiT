@@ -48,6 +48,7 @@ DAMPED_EAR = 0.3
 DAMPING_WEIGHT = 0.07
 EYE_AR_CONSEC_FRAMES = 48 # was 48 before
 CONFIG_MIN_TIME = 10
+VERY_DAMPED_EAR = 0.3
 
 # initialize the frame counter as well as a boolean used to
 # indicate if the alarm is going off
@@ -126,9 +127,11 @@ def main():
 
 
 		global DAMPED_EAR
+		global VERY_DAMPED_EAR
 		# average the eye aspect ratio together for both eyes
 		# Removed noise from ear with MA-filter (low pass filter)
 		DAMPED_EAR = DAMPED_EAR + DAMPING_WEIGHT * (ear - DAMPED_EAR)
+		VERY_DAMPED_EAR = VERY_DAMPED_EAR + 0.05 * (ear - VERY_DAMPED_EAR)
 		EYE_AR_MEDIAN = c1.get_config_parameter(DAMPED_EAR)
 
 		global EYE_AR_THRESH
@@ -139,7 +142,7 @@ def main():
 
 		global FIRST
 
-		blink_score = blink.get_blink_score(ear, EYE_AR_MEDIAN, FIRST, args["name"])
+		blink_score = blink.get_blink_score(ear, VERY_DAMPED_EAR, EYE_AR_MEDIAN, FIRST, args["name"])
 
 		FIRST = False
 
