@@ -25,8 +25,8 @@ class blink():
 
     # UPDATE BLINKING HISTORY WITH NEW INFORMATION
     def update_information(self, ear, ear_median):
-        eye_open_thresh = 0.85 * ear_median
-        eye_closed_thresh = 0.8 * ear_median
+        eye_open_thresh = 0.7 * ear_median
+        eye_closed_thresh = 0.7 * ear_median
         self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
         if self.current_blink == None and ear < eye_closed_thresh:
             self.current_blink = blink_instance(datetime.now(), 1)
