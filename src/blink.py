@@ -19,26 +19,30 @@ class blink():
     blinking_history = []
     current_blink = None
     just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR 
+    can_register_new_blink = True
 
     def __init__(self):
         super(blink, self).__init__()
 
     # UPDATE BLINKING HISTORY WITH NEW INFORMATION
     def update_information(self, ear, damped_ear, ear_median, first, name):
-        thresh = 0.05
+        close_thresh = 0.05
+        open_thresh = 0.02
+        new_blink_thresh = 0
         if name != "NN": 
             self.write_to_file("blinking", ear, first, name)
             self.write_to_file("damped_ear", damped_ear, first, name)
-            self.write_to_file("thresh", damped_ear - thresh, first, name)
+            self.write_to_file("thresh", damped_ear - close_thresh, first, name)
         self.blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=30), self.blinking_history))
-        if self.current_blink == None and damped_ear - ear > thresh:
+        if self.current_blink == None and damped_ear - ear > close_thresh and self.can_register_new_blink:
             if name != "NN": self.write_to_file("is_blinking", 0.05, first, name)
             self.current_blink = blink_instance(datetime.now(), 1)
-        elif self.current_blink != None and damped_ear - ear > thresh:
+            self.can_register_new_blink = False
+        elif self.current_blink != None and damped_ear - ear > open_thresh:
             if name != "NN": self.write_to_file("is_blinking", 0.05, first, name)
             new_blink_length = self.current_blink.get_duration() + 1 
             setattr(self.current_blink, 'duration', new_blink_length)
-        elif self.current_blink != None and damped_ear - ear < 0.01: 
+        elif self.current_blink != None and damped_ear - ear < open_thresh: 
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
             if self.current_blink.duration < 30:
                 self.blinking_history.append(self.current_blink)
@@ -46,6 +50,8 @@ class blink():
             self.current_blink = None
         else:
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
+        if damped_ear - ear < new_blink_thresh:
+            self.can_register_new_blink = True
         self.last_ear = ear
         self.last_damped_ear = damped_ear
 
@@ -92,5 +98,8 @@ class blink():
         if shift_percentage_sum < 0.01: return 0
         if shift_percentage_sum > 1: return 1
         return shift_percentage_sum
+
+    def reset_current_blink(self):
+        self.current_blink = None
 
 

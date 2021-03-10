@@ -97,7 +97,8 @@ def main():
 	# detect faces in the grayscale frame
 	rects = detector(gray, 0)
 
-
+	if len(rects) == 0:
+		blink.reset_current_blink()
 	# loop over the face detections
 	for rect in rects:
 		# determine the facial landmarks for the face region, then
@@ -121,9 +122,6 @@ def main():
 
 		# if the eye was closed and is now open
 		# there was a blink,
-
-
-
 
 
 		global DAMPED_EAR
