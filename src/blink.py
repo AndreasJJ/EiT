@@ -38,7 +38,7 @@ class blink():
             if name != "NN": self.write_to_file("is_blinking", 0.05, first, name)
             new_blink_length = self.current_blink.get_duration() + 1 
             setattr(self.current_blink, 'duration', new_blink_length)
-        elif self.current_blink != None and damped_ear - ear < 0.1: 
+        elif self.current_blink != None and damped_ear - ear < 0.01: 
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
             if self.current_blink.duration < 30:
                 self.blinking_history.append(self.current_blink)
