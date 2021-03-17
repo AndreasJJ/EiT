@@ -90,7 +90,7 @@ class blink():
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
     def get_blink_score(self, ear, damped_ear, first, name):
         self.update_information(ear, damped_ear, first, name)
-        if not self.configured and len(self.blinking_history) > 1 and datetime.now() - timedelta(seconds=10) > self.blinking_history[0].get_timestamp():
+        if not self.configured and len(self.blinking_history) > 1 and datetime.now() - timedelta(minutes=20) > self.blinking_history[0].get_timestamp():
             self.configure_mean_and_sd()
 
         if not self.configured: return 0, 0
