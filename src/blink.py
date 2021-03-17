@@ -20,7 +20,6 @@ class blink_instance:
 class blink():
     blinking_history = []
     current_blink = None
-    # just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR 
     can_register_new_blink = True
     configured = False
     periods = None
@@ -51,7 +50,6 @@ class blink():
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
             if self.current_blink.duration < 30:
                 self.blinking_history.append(self.current_blink)
-                # self.just_blinked = True
             self.current_blink = None
         else:
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
@@ -90,8 +88,8 @@ class blink():
 
 
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
-    def get_blink_score(self, ear, damped_ear, ear_thresh, first, name):
-        self.update_information(ear, damped_ear, ear_thresh, first, name)
+    def get_blink_score(self, ear, damped_ear, first, name):
+        self.update_information(ear, damped_ear, first, name)
         if not self.configured and len(self.blinking_history) > 1 and datetime.now() - timedelta(seconds=10) > self.blinking_history[0].get_timestamp():
             self.configure_mean_and_sd()
 
@@ -102,17 +100,6 @@ class blink():
         ttest_period = ttest_ind(self.periods, periods, equal_var=False, alternative='less')
         ttest_duration = ttest_ind(self.durations, durations, equal_var=False, alternative='greater')
 
-        # ONLY FOR PRINTING, CAN BE REMOVED LATER ON
-        # if self.just_blinked:
-        #     print("THIS BLINK")
-        #     print("Time between blinks: {:.2f}".format(periods[-1]))
-        #     print("Duration: {:.2f}".format(durations[-1]))
-        #     print("--------------------------------------------------")
-        #     print("TTEST")
-        #     print('ttest period: {}'.format(ttest_period))
-        #     print('ttest duration: {}'.format(ttest_duration))
-        #     print("\n****************************************************\n")
-        #     self.just_blinked = False
         return float(ttest_period.pvalue), float(ttest_duration.pvalue)
 
 

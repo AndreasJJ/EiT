@@ -144,6 +144,9 @@ def main():
 
 		FIRST = False
 
+		sleepiness_scores = [yawning_score, period_score, duration_score]
+		sleepiness_scores.sort()
+		sleepiness_score = np.mean(sleepiness_scores)
 		# compute the convex hull for the left and right eye, then
 		# visualize each of the eyes
 		leftEyeHull = cv2.convexHull(leftEye)
@@ -209,6 +212,8 @@ def main():
 		cv2.putText(frame, "tresh: {:.2f}".format(EYE_AR_THRESH), (300, 70),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 		cv2.putText(frame, "median: {:.2f}".format(EYE_AR_MEDIAN), (300, 90),
+			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+		cv2.putText(frame, "sleepiness score: {:.2f}".format(sleepiness_score), (200, 130),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
  
 	# show the frame
