@@ -147,5 +147,5 @@ class yawn(object):
     Private method to draw mar value to screen
     '''
     def __draw_mar(self, frame, mar):
-        self.cv.putText(frame, "MAR: {:.2f}".format(mar), (300, 60),
+        self.cv.putText(frame, "MAR: {:.2f}".format(mar), (300, 110),
                self.cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
