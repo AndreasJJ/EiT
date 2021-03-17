@@ -2,6 +2,8 @@ from datetime import datetime
 from datetime import timedelta
 from dataclasses import dataclass
 import os
+import numpy as np
+from scipy.stats import norm, ttest_ind
 
 
 @dataclass
@@ -18,14 +20,17 @@ class blink_instance:
 class blink():
     blinking_history = []
     current_blink = None
-    just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR 
+    # just_blinked = False # ONLY USED FOR PRINTING ONLY WHEN A NEW BLINKING OCCUR 
     can_register_new_blink = True
+    configured = False
+    periods = None
+    durations = None
 
     def __init__(self):
         super(blink, self).__init__()
 
     # UPDATE BLINKING HISTORY WITH NEW INFORMATION
-    def update_information(self, ear, damped_ear, ear_median, first, name):
+    def update_information(self, ear, damped_ear, first, name):
         close_thresh = 0.05
         open_thresh = 0.02
         new_blink_thresh = 0
@@ -46,7 +51,7 @@ class blink():
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
             if self.current_blink.duration < 30:
                 self.blinking_history.append(self.current_blink)
-                self.just_blinked = True
+                # self.just_blinked = True
             self.current_blink = None
         else:
             if name != "NN": self.write_to_file("is_blinking", 0, first, name)
@@ -66,38 +71,50 @@ class blink():
         f.write("{:.3f}".format(value) + ";")
         f.close()
 
+    def get_periods_and_durations(self, blinking_history):
+        periods = []
+        durations = []
+        for i in range(len(blinking_history)):
+            if i < len(blinking_history) - 1: 
+                timedelta = blinking_history[i+1].get_timestamp() - blinking_history[i].get_timestamp()
+                periods.append(timedelta.total_seconds())
+            durations.append(blinking_history[i].get_duration())
+        return periods, durations
+
+
+    def configure_mean_and_sd(self):
+        periods, durations = self.get_periods_and_durations(self.blinking_history)
+        self.periods = periods
+        self.durations = durations
+        self.configured = True
+
+
     # CALCULATE THE SCORE OF TIREDNESS BASED ON BLINKING
     def get_blink_score(self, ear, damped_ear, ear_thresh, first, name):
         self.update_information(ear, damped_ear, ear_thresh, first, name)
-        short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
-        if len(self.blinking_history) == 0 or len(short_term_blinking_history) == 0: return 0
-        short_term_average_blink_duration = sum(list(map(lambda x: x.duration, short_term_blinking_history))) / len(short_term_blinking_history)
-        long_term_average_blink_duration = sum(list(map(lambda x: x.duration, self.blinking_history))) / len(self.blinking_history)
-        short_term_duration = (datetime.now() - short_term_blinking_history[0].get_timestamp()).total_seconds() * 1/60
-        long_term_duration = (datetime.now() - self.blinking_history[0].get_timestamp()).total_seconds() * 1/60
-        if short_term_duration == 0 or long_term_duration == 0: return 0
-        short_term_frequency = len(short_term_blinking_history) / short_term_duration
-        long_term_frequency = len(self.blinking_history) / long_term_duration
+        if not self.configured and len(self.blinking_history) > 1 and datetime.now() - timedelta(seconds=10) > self.blinking_history[0].get_timestamp():
+            self.configure_mean_and_sd()
 
-        shift_in_average_blink_duration_in_percent_of_long_term = (short_term_average_blink_duration - long_term_average_blink_duration) / long_term_average_blink_duration
-        shift_in_blink_frequency_in_percent_of_long_term = (short_term_frequency - long_term_frequency) / long_term_frequency
+        if not self.configured: return 0, 0
+
+        short_term_blinking_history = list(filter(lambda x: x.get_timestamp() > datetime.now() - timedelta(minutes=5), self.blinking_history))
+        periods, durations = self.get_periods_and_durations(short_term_blinking_history)
+        ttest_period = ttest_ind(self.periods, periods, equal_var=False, alternative='less')
+        ttest_duration = ttest_ind(self.durations, durations, equal_var=False, alternative='greater')
 
         # ONLY FOR PRINTING, CAN BE REMOVED LATER ON
-        if self.just_blinked:
-            print("SHORT TERM")
-            print("Duration: {:.2f} frames pr blink".format(short_term_average_blink_duration))
-            print("Frequncy: {:.2f} blink pr minute".format(short_term_frequency))
-            print("LONG TERM")
-            print("Duration: {:.2f} frames pr blink".format(long_term_average_blink_duration))
-            print("Frequncy: {:.2f} blink pr minute".format(long_term_frequency))
-            print("----------------------------------")
-            self.just_blinked = False
-        
-        shift_percentage_sum = shift_in_average_blink_duration_in_percent_of_long_term + shift_in_blink_frequency_in_percent_of_long_term
+        # if self.just_blinked:
+        #     print("THIS BLINK")
+        #     print("Time between blinks: {:.2f}".format(periods[-1]))
+        #     print("Duration: {:.2f}".format(durations[-1]))
+        #     print("--------------------------------------------------")
+        #     print("TTEST")
+        #     print('ttest period: {}'.format(ttest_period))
+        #     print('ttest duration: {}'.format(ttest_duration))
+        #     print("\n****************************************************\n")
+        #     self.just_blinked = False
+        return float(ttest_period.pvalue), float(ttest_duration.pvalue)
 
-        if shift_percentage_sum < 0.01: return 0
-        if shift_percentage_sum > 1: return 1
-        return shift_percentage_sum
 
     def reset_current_blink(self):
         self.current_blink = None
