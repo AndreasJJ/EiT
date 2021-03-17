@@ -140,7 +140,7 @@ def main():
 
 		global FIRST
 
-		blink_score = blink.get_blink_score(ear, VERY_DAMPED_EAR, EYE_AR_MEDIAN, FIRST, args["name"])
+		period_score, duration_score = blink.get_blink_score(ear, VERY_DAMPED_EAR, FIRST, args["name"])
 
 		FIRST = False
 
